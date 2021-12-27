@@ -14,13 +14,12 @@ const genTeXBody = (from, to) => {
   name        = ${from.name},
   address     = ${from.address}
 }
+\\begin{document}
 \\recipient{
   postal_code = ${to.postalCode},
   name        = ${to.name},
   address     = ${to.address}
 }
-\\begin{document}
-\\makebody
 \\end{document}`;
   return body
 }
