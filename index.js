@@ -1,14 +1,11 @@
 const fs = require("fs");
 const cp = require("child_process");
 const path = require("path");
-
-const dataFilePath = "data.json";
-const jsonData = fs.readFileSync(dataFilePath, "utf-8");
-const { sender, recipient } = JSON.parse(jsonData);
+const cmdArgs = require("command-line-args");
 
 const genTeXBody = (from, to) => {
   const body =
-`\\documentclass{hagaki}
+`\\documentclass[nenga]{hagaki}
 \\sender{
   postal_code = ${from.postalCode},
   name        = ${from.name},
@@ -23,6 +20,17 @@ const genTeXBody = (from, to) => {
 \\end{document}`;
   return body
 }
+
+const optsDef = [
+  {
+    name: "file",
+    alias: "f"
+  }
+]
+const opts = cmdArgs(optsDef);
+
+const jsonData = fs.readFileSync(opts.file, "utf-8");
+const { sender, recipient } = JSON.parse(jsonData);
 
 const outputDir = path.resolve("output/");
 
@@ -40,8 +48,7 @@ recipient.forEach(to => {
       console.log("  >> Generated file: " + fileName + ".tex");
       const command = `lualatex "${fileName}.tex"`;
       const opts = {
-        cwd: outputDir,
-        timeout: 5000
+        cwd: outputDir
       }
       cp.exec(command, opts, (error, stdout) => {
         if (error) {
