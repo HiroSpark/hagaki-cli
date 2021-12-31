@@ -3,23 +3,28 @@ const cp = require("child_process");
 const path = require("path");
 const cmdArgs = require("command-line-args");
 
+const formatAsTeX = (str) => {
+  const inner = str.join(",");
+  return "{" + inner + "}";
+}
+
 const genTeXBody = (from, to) => {
   const body =
 `\\documentclass[nenga]{hagaki}
 \\sender{
   postal_code = ${from.postalCode},
-  name        = ${from.name},
+  name        = ${formatAsTeX(from.name)},
   address     = ${from.address}
 }
 \\begin{document}
 \\recipient{
   postal_code = ${to.postalCode},
-  name        = ${to.name},
+  name        = ${formatAsTeX(to.name)},
   address     = ${to.address}
 }
 \\end{document}`;
-  return body
-}
+  return body;
+};
 
 const optsDef = [
   {
@@ -43,13 +48,13 @@ recipient.forEach(to => {
   const body = genTeXBody(sender, to);
   fs.writeFile(outputDir + "/" + fileName + ".tex", body, (error) => {
     if (error) {
-      throw error
+      throw error;
     } else {
       console.log("  >> Generated file: " + fileName + ".tex");
       const command = `lualatex "${fileName}.tex"`;
       const opts = {
         cwd: outputDir
-      }
+      };
       cp.exec(command, opts, (error, stdout) => {
         if (error) {
           throw error;
