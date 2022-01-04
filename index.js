@@ -29,7 +29,8 @@ const genTeXBody = (from, to) => {
 const optsDef = [
   {
     name: "file",
-    alias: "f"
+    alias: "f",
+    defaultValue: "data.json"
   }
 ]
 const opts = cmdArgs(optsDef);
