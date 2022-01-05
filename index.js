@@ -3,28 +3,7 @@ const cp = require("child_process");
 const path = require("path");
 const cmdArgs = require("command-line-args");
 
-const formatAsTeX = (str) => {
-  const inner = str.join(",");
-  return "{" + inner + "}";
-}
-
-const genTeXBody = (from, to) => {
-  const body =
-`\\documentclass[nenga]{hagaki}
-\\sender{
-  postal_code = ${from.postalCode},
-  name        = ${formatAsTeX(from.name)},
-  address     = ${from.address}
-}
-\\begin{document}
-\\recipient{
-  postal_code = ${to.postalCode},
-  name        = ${formatAsTeX(to.name)},
-  address     = ${to.address}
-}
-\\end{document}`;
-  return body;
-};
+// オプション
 
 const optsDef = [
   {
@@ -35,8 +14,17 @@ const optsDef = [
 ]
 const opts = cmdArgs(optsDef);
 
+// JSON の読み込み
+
 const jsonData = fs.readFileSync(opts.file, "utf-8");
 const { sender, recipient } = JSON.parse(jsonData);
+
+// 主処理
+
+const getAllMembers = (name, family) => [name, ... family ? family : []];
+const formatAsEntry = (array) => {
+  return "{" + array.join(",") + "}";
+};
 
 const outputDir = path.resolve("output/");
 
@@ -44,25 +32,43 @@ if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir);
 }
 
-recipient.forEach(to => {
-  const fileName = to.name;
-  const body = genTeXBody(sender, to);
-  fs.writeFile(outputDir + "/" + fileName + ".tex", body, (error) => {
-    if (error) {
-      throw error;
-    } else {
+const senderMembers = getAllMembers(sender.name, sender.family);
+
+Object.keys(recipient).forEach((recipienetName) => {
+  const recipientData = recipient[recipienetName];
+  const recipientMembers = getAllMembers(recipienetName, recipientData.family);
+  const texFileBody = 
+`\\documentclass[nenga]{hagaki}
+\\sender{
+  postal_code = ${sender.postalCode},
+  name        = ${formatAsEntry(senderMembers)},
+  address     = ${sender.address}
+}
+\\begin{document}
+\\recipient{
+  postal_code = ${recipientData.postalCode},
+  name        = ${formatAsEntry(recipientMembers)},
+  address     = ${recipientData.address}
+}
+\\end{document}`;
+  const fileName = recipienetName.replace(" ", "_");
+  const texFilePath = path.format({ dir: outputDir, name: fileName, ext: ".tex" });
+  fs.promises.writeFile(texFilePath, texFileBody)
+    .then(() => {
       console.log("  >> Generated file: " + fileName + ".tex");
-      const command = `lualatex "${fileName}.tex"`;
+      const command = "lualatex " + fileName + ".tex";
       const opts = {
         cwd: outputDir
-      };
-      cp.exec(command, opts, (error, stdout) => {
+      }
+      cp.exec(command, opts, (error) => {
         if (error) {
           throw error;
         } else {
           console.log("  >> Generated file: " + fileName + ".pdf");
         }
       });
-    }
-  });
+    })
+    .catch((error) => {
+      throw error;
+    });
 });
