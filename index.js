@@ -1,70 +1,70 @@
-const fs = require("fs");
-const cp = require("child_process");
-const path = require("path");
-const cmdArgs = require("command-line-args");
+const fs = require('fs');
+const cp = require('child_process');
+const path = require('path');
+const cmdArgs = require('command-line-args');
 
 // オプション
 
 const optsDef = [
   {
-    name: "filter",
+    name: 'filter',
     defaultOption: true,
-    type: String
+    type: String,
   },
   {
-    name: "file",
-    alias: "f",
-    defaultValue: "data.json",
-    type: String
+    name: 'file',
+    alias: 'f',
+    defaultValue: 'data.json',
+    type: String,
   },
   {
-    name: "tex-only",
-    alias: "t",
+    name: 'tex-only',
+    alias: 't',
     defaultValue: false,
-    type: Boolean
+    type: Boolean,
   },
   {
-    name: "pdf-only",
-    alias: "p",
+    name: 'pdf-only',
+    alias: 'p',
     defaultValue: false,
-    type: Boolean
+    type: Boolean,
   },
   {
-    name: "tex-options",
-    alias: "o",
+    name: 'tex-options',
+    alias: 'o',
     multiple: true,
-    type: String
-  }
-]
+    type: String,
+  },
+];
 const opts = cmdArgs(optsDef, { camelCase: true });
 
 // JSON の読み込み
 
-const jsonData = fs.readFileSync(opts.file, "utf-8");
+const jsonData = fs.readFileSync(opts.file, 'utf-8');
 const { sender, recipient } = JSON.parse(jsonData);
 
 // 主処理
 
-const getAllMembers = (name, family) => [name, ... family ? family : []];
+const getAllMembers = (name, family) => [name, ...(family ? family : [])];
 const formatAsEntry = (array) => {
-  return "{" + array.join(",") + "}";
+  return '{' + array.join(',') + '}';
 };
 
 const texToPdf = (workDir, fileName) => {
-  const command = "lualatex " + fileName + ".tex";
+  const command = 'lualatex ' + fileName + '.tex';
   const opts = {
-    cwd: workDir
-  }
+    cwd: workDir,
+  };
   cp.exec(command, opts, (error) => {
     if (error) {
       throw error;
     } else {
-      console.log("  >> Generated file: " + fileName + ".pdf");
+      console.log('  >> Generated file: ' + fileName + '.pdf');
     }
   });
-}
+};
 
-const outputDir = path.resolve("output/");
+const outputDir = path.resolve('output/');
 
 if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir);
@@ -76,13 +76,15 @@ const filterRegex = new RegExp(opts.filter);
 Object.keys(recipient).forEach((recipienetName) => {
   if (filterRegex.test(recipienetName)) {
     // ファイル名
-    const fileName = recipienetName.replace(" ", "_");
+    const fileName = recipienetName.replace(' ', '_');
     if (!opts.pdfOnly) {
       // tex ファイルの中身の作成
       const recipientData = recipient[recipienetName];
-      const recipientMembers = getAllMembers(recipienetName, recipientData.family);
-      const texFileBody = 
-`\\documentclass[${opts.texOptions}]{hagaki}
+      const recipientMembers = getAllMembers(
+        recipienetName,
+        recipientData.family
+      );
+      const texFileBody = `\\documentclass[${opts.texOptions}]{hagaki}
 \\sender{
 postal_code = ${sender.postalCode},
 name        = ${formatAsEntry(senderMembers)},
@@ -95,11 +97,16 @@ name        = ${formatAsEntry(recipientMembers)},
 address     = ${recipientData.address}
 }
 \\end{document}`;
-      const texFilePath = path.format({ dir: outputDir, name: fileName, ext: ".tex" });
+      const texFilePath = path.format({
+        dir: outputDir,
+        name: fileName,
+        ext: '.tex',
+      });
       // ファイルの作成
-      fs.promises.writeFile(texFilePath, texFileBody)
+      fs.promises
+        .writeFile(texFilePath, texFileBody)
         .then(() => {
-          console.log("  >> Generated file: " + fileName + ".tex");
+          console.log('  >> Generated file: ' + fileName + '.tex');
           if (!opts.texOnly) texToPdf(outputDir, fileName);
         })
         .catch((error) => {
