@@ -18,19 +18,25 @@ const optsDef = [
     type: String
   },
   {
-    name: "texonly",
+    name: "tex-only",
     alias: "t",
     defaultValue: false,
     type: Boolean
   },
   {
-    name: "pdfonly",
+    name: "pdf-only",
     alias: "p",
     defaultValue: false,
     type: Boolean
+  },
+  {
+    name: "tex-options",
+    alias: "o",
+    multiple: true,
+    type: String
   }
 ]
-const opts = cmdArgs(optsDef);
+const opts = cmdArgs(optsDef, { camelCase: true });
 
 // JSON の読み込み
 
@@ -71,12 +77,12 @@ Object.keys(recipient).forEach((recipienetName) => {
   if (filterRegex.test(recipienetName)) {
     // ファイル名
     const fileName = recipienetName.replace(" ", "_");
-    if (!opts.pdfonly) {
+    if (!opts.pdfOnly) {
       // tex ファイルの中身の作成
       const recipientData = recipient[recipienetName];
       const recipientMembers = getAllMembers(recipienetName, recipientData.family);
       const texFileBody = 
-`\\documentclass[nenga]{hagaki}
+`\\documentclass[${opts.texOptions}]{hagaki}
 \\sender{
 postal_code = ${sender.postalCode},
 name        = ${formatAsEntry(senderMembers)},
@@ -94,7 +100,7 @@ address     = ${recipientData.address}
       fs.promises.writeFile(texFilePath, texFileBody)
         .then(() => {
           console.log("  >> Generated file: " + fileName + ".tex");
-          if (!opts.texonly) texToPdf(outputDir, fileName);
+          if (!opts.texOnly) texToPdf(outputDir, fileName);
         })
         .catch((error) => {
           throw error;
