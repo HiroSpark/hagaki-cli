@@ -6,29 +6,34 @@ const cmdArgs = require('command-line-args');
 // オプション
 
 const optsDef = [
+  // --filter <正規表現>
   {
     name: 'filter',
     defaultOption: true,
     type: String,
   },
+  // --file -f <住所のJSファイル>
   {
     name: 'file',
     alias: 'f',
-    defaultValue: 'data.json',
+    defaultValue: 'data.js',
     type: String,
   },
+  // --tex-only
   {
     name: 'tex-only',
     alias: 't',
     defaultValue: false,
     type: Boolean,
   },
+  // --pdf-only
   {
     name: 'pdf-only',
     alias: 'p',
     defaultValue: false,
     type: Boolean,
   },
+  // --tex-options <ドキュメントクラスのオプション>
   {
     name: 'tex-options',
     alias: 'o',
@@ -38,10 +43,11 @@ const optsDef = [
 ];
 const opts = cmdArgs(optsDef, { camelCase: true });
 
-// JSON の読み込み
+// 差出人・宛先情報の読み込み
 
-const jsonData = fs.readFileSync(opts.file, 'utf-8');
-const { sender, recipient } = JSON.parse(jsonData);
+const absoluteConfigPath = path.join(process.cwd(), opts.file)
+const pathToConfig = path.relative(__dirname, absoluteConfigPath)
+const { sender, recipient } = require(pathToConfig)
 
 // 主処理
 
