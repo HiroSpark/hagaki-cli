@@ -1,4 +1,7 @@
 output/
+.DS_Store
+data.js
+notes.md
 
 # Logs
 logs
