@@ -1,15 +1,18 @@
 {
   "name": "hagaki-cli",
   "scripts": {
-    "lint": "prettier **/*.{js,json} --write"
+    "lint": "prettier **/*.{ts,json} --write"
   },
   "dependencies": {
     "command-line-args": "^5.2.0"
   },
   "devDependencies": {
-    "prettier": "^2.5.1"
+    "@types/command-line-args": "^5.2.0",
+    "@types/node": "^18.15.1",
+    "prettier": "^2.5.1",
+    "typescript": "^4.9.5"
   },
   "bin": {
-    "hagaki": "./bin/index.js"
+    "hagaki": "./dist/index.js"
   }
 }

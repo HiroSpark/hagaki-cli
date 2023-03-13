@@ -5,9 +5,11 @@ const cp = require('child_process');
 const path = require('path');
 const cmdArgs = require('command-line-args');
 
+import type { OptionDefinition } from 'command-line-args';
+
 // オプション
 
-const optsDef = [
+const optsDef: Array<OptionDefinition> = [
   // --filter <正規表現>
   {
     name: 'filter',
@@ -47,23 +49,27 @@ const opts = cmdArgs(optsDef, { camelCase: true });
 
 // 差出人・宛先情報の読み込み
 
-const absoluteConfigPath = path.join(process.cwd(), opts.file)
-const pathToConfig = path.relative(__dirname, absoluteConfigPath)
-const { sender, recipient } = require(pathToConfig)
+const absoluteConfigPath = path.join(process.cwd(), opts.file);
+const pathToConfig = path.relative(__dirname, absoluteConfigPath);
+const { sender, recipient } = require(pathToConfig);
 
 // 主処理
 
-const getAllMembers = (name, family) => [name, ...(family ? family : [])];
-const formatAsEntry = (array) => {
+const getAllMembers = (name: string, family: Array<string>): Array<string> => [
+  name,
+  ...(family ? family : []),
+];
+
+const formatAsEntry = (array: Array<string>): string => {
   return '{' + array.join(',') + '}';
 };
 
-const texToPdf = (workDir, fileName) => {
+const texToPdf = (workDir: string, fileName: string): void | Error => {
   const command = 'lualatex ' + fileName + '.tex';
   const opts = {
     cwd: workDir,
   };
-  cp.exec(command, opts, (error) => {
+  cp.exec(command, opts, (error: cp.ExecException | null): void | cp.ExecException | null => {
     if (error) {
       throw error;
     } else {
@@ -81,7 +87,7 @@ if (!fs.existsSync(outputDir)) {
 const senderMembers = getAllMembers(sender.name, sender.family);
 const filterRegex = new RegExp(opts.filter);
 
-Object.keys(recipient).forEach((recipienetName) => {
+Object.keys(recipient).forEach((recipienetName: string): void => {
   if (filterRegex.test(recipienetName)) {
     // ファイル名
     const fileName = recipienetName.replace(' ', '_');
@@ -113,11 +119,11 @@ address     = ${recipientData.address}
       // ファイルの作成
       fs.promises
         .writeFile(texFilePath, texFileBody)
-        .then(() => {
+        .then((): void => {
           console.log('  >> Generated file: ' + fileName + '.tex');
           if (!opts.texOnly) texToPdf(outputDir, fileName);
         })
-        .catch((error) => {
+        .catch((error: Error): Error => {
           throw error;
         });
     } else {
