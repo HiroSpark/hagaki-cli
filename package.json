@@ -1,5 +1,6 @@
 {
   "name": "hagaki-cli",
+  "version": "0.1.0",
   "scripts": {
     "lint": "prettier **/*.{ts,json} --write"
   },
