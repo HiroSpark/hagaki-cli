@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-import fs = require('fs');
-import cp = require('child_process');
-import path = require('path');
-import cmdArgs = require('command-line-args');
+import fs from 'fs';
+import cp from 'child_process';
+import path from 'path';
+import cmdArgs from 'command-line-args';
 
 import type { OptionDefinition } from 'command-line-args';
 
