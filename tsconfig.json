@@ -4,7 +4,8 @@
     "module": "commonjs",
     "outDir": "./dist",
     "rootDir": ".",
-    "strict": true
+    "strict": true,
+    "esModuleInterop": true
   },
   "compileOnSave": true
 }
