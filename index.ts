@@ -69,13 +69,17 @@ const texToPdf = (workDir: string, fileName: string): void | Error => {
   const opts = {
     cwd: workDir,
   };
-  cp.exec(command, opts, (error: cp.ExecException | null): void | cp.ExecException | null => {
-    if (error) {
-      throw error;
-    } else {
-      console.log('  >> Generated file: ' + fileName + '.pdf');
+  cp.exec(
+    command,
+    opts,
+    (error: cp.ExecException | null): void | cp.ExecException | null => {
+      if (error) {
+        throw error;
+      } else {
+        console.log('  >> Generated file: ' + fileName + '.pdf');
+      }
     }
-  });
+  );
 };
 
 const outputDir = path.resolve('output/');
